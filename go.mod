@@ -1,6 +1,6 @@
 module github.com/ensoria/gofake
 
-go 1.24.2
+go 1.26.4
 
 require (
 	github.com/onsi/ginkgo/v2 v2.23.4
