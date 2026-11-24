@@ -25,20 +25,20 @@ import (
 //
 // すべてのフェイクデータジェネレーターを集約するメインのエントリーポイント構造体。
 type Faker struct {
-	Rand        *core.Rand
-	Person      *person.Person
-	Color       *color.Color
-	Address     *address.Address
-	Barcode     *barcode.Barcode
-	Company     *company.Company
-	File        *file.File
-	Image       *image.Image
-	Internet    *internet.Internet
-	Lorem       *lorem.Lorem
-	Medical     *medical.Medical
-	Payment     *payment.Payment
-	PhoneNumber *phonenumber.PhoneNumber
-	UserAgent   *useragent.UserAgent
+	rand        *core.Rand
+	person      *person.Person
+	color       *color.Color
+	address     *address.Address
+	barcode     *barcode.Barcode
+	company     *company.Company
+	file        *file.File
+	image       *image.Image
+	internet    *internet.Internet
+	lorem       *lorem.Lorem
+	medical     *medical.Medical
+	payment     *payment.Payment
+	phoneNumber *phonenumber.PhoneNumber
+	userAgent   *useragent.UserAgent
 }
 
 // REF: https://fakerphp.github.io/
@@ -81,19 +81,114 @@ func CreateWithLocaleAndSeed(localized *provider.Localized, seed int64) *Faker {
 func newFaker(coreRand *core.Rand, localized *provider.Localized) *Faker {
 	global := global.New()
 	return &Faker{
-		Rand:        coreRand,
-		Barcode:     barcode.New(coreRand),
-		Color:       color.New(coreRand, global),
-		Person:      person.New(coreRand, localized),
-		Address:     address.New(coreRand, localized),
-		Company:     company.New(coreRand, localized),
-		File:        file.New(coreRand, global),
-		Image:       image.New(coreRand, global),
-		Internet:    internet.New(coreRand, global),
-		Lorem:       lorem.New(coreRand, global),
-		Medical:     medical.New(coreRand, global),
-		Payment:     payment.New(coreRand, global),
-		PhoneNumber: phonenumber.New(coreRand, global, localized),
-		UserAgent:   useragent.New(coreRand, global),
+		rand:        coreRand,
+		barcode:     barcode.New(coreRand),
+		color:       color.New(coreRand, global),
+		person:      person.New(coreRand, localized),
+		address:     address.New(coreRand, localized),
+		company:     company.New(coreRand, localized),
+		file:        file.New(coreRand, global),
+		image:       image.New(coreRand, global),
+		internet:    internet.New(coreRand, global),
+		lorem:       lorem.New(coreRand, global),
+		medical:     medical.New(coreRand, global),
+		payment:     payment.New(coreRand, global),
+		phoneNumber: phonenumber.New(coreRand, global, localized),
+		userAgent:   useragent.New(coreRand, global),
 	}
+}
+
+// Bool returns the generator for booleans.
+func (f *Faker) Bool() *core.RandBool {
+	return f.rand.Bool
+}
+
+// Num returns the generator for numbers.
+func (f *Faker) Num() *core.RandNum {
+	return f.rand.Num
+}
+
+// Str returns the generator for strings.
+func (f *Faker) Str() *core.RandStr {
+	return f.rand.Str
+}
+
+// Time returns the generator for times and durations.
+func (f *Faker) Time() *core.RandTime {
+	return f.rand.Time
+}
+
+// Slice returns the generator for sampling slices.
+func (f *Faker) Slice() *core.RandSlice {
+	return f.rand.Slice
+}
+
+// Map returns the generator for sampling maps.
+func (f *Faker) Map() *core.RandMap {
+	return f.rand.Map
+}
+
+// Person returns the generator for personal data.
+func (f *Faker) Person() *person.Person {
+	return f.person
+}
+
+// Color returns the generator for colors.
+func (f *Faker) Color() *color.Color {
+	return f.color
+}
+
+// Address returns the generator for addresses.
+func (f *Faker) Address() *address.Address {
+	return f.address
+}
+
+// Barcode returns the generator for barcodes.
+func (f *Faker) Barcode() *barcode.Barcode {
+	return f.barcode
+}
+
+// Company returns the generator for company data.
+func (f *Faker) Company() *company.Company {
+	return f.company
+}
+
+// File returns the generator for file data.
+func (f *Faker) File() *file.File {
+	return f.file
+}
+
+// Image returns the generator for images.
+func (f *Faker) Image() *image.Image {
+	return f.image
+}
+
+// Internet returns the generator for internet data.
+func (f *Faker) Internet() *internet.Internet {
+	return f.internet
+}
+
+// Lorem returns the generator for placeholder text.
+func (f *Faker) Lorem() *lorem.Lorem {
+	return f.lorem
+}
+
+// Medical returns the generator for medical data.
+func (f *Faker) Medical() *medical.Medical {
+	return f.medical
+}
+
+// Payment returns the generator for payment data.
+func (f *Faker) Payment() *payment.Payment {
+	return f.payment
+}
+
+// PhoneNumber returns the generator for phone numbers.
+func (f *Faker) PhoneNumber() *phonenumber.PhoneNumber {
+	return f.phoneNumber
+}
+
+// UserAgent returns the generator for user agent strings.
+func (f *Faker) UserAgent() *useragent.UserAgent {
+	return f.userAgent
 }

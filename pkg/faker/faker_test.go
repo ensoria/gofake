@@ -5,43 +5,59 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/ensoria/gofake/pkg/faker"
+	"github.com/ensoria/gofake/pkg/faker/core"
+	"github.com/ensoria/gofake/pkg/faker/generator/address"
+	"github.com/ensoria/gofake/pkg/faker/generator/barcode"
+	"github.com/ensoria/gofake/pkg/faker/generator/color"
+	"github.com/ensoria/gofake/pkg/faker/generator/company"
+	"github.com/ensoria/gofake/pkg/faker/generator/file"
+	"github.com/ensoria/gofake/pkg/faker/generator/image"
+	"github.com/ensoria/gofake/pkg/faker/generator/internet"
+	"github.com/ensoria/gofake/pkg/faker/generator/lorem"
+	"github.com/ensoria/gofake/pkg/faker/generator/medical"
+	"github.com/ensoria/gofake/pkg/faker/generator/payment"
+	"github.com/ensoria/gofake/pkg/faker/generator/person"
+	"github.com/ensoria/gofake/pkg/faker/generator/phonenumber"
+	"github.com/ensoria/gofake/pkg/faker/generator/useragent"
 	"github.com/ensoria/gofake/pkg/faker/provider/locale/ja_JP"
 )
 
-var _ = Describe("Faker", func() {
+func expectSameGenerator[T any](name string, get func() *T) {
+	GinkgoHelper()
+	first := get()
+	Expect(first).NotTo(BeNil(), name)
+	Expect(get()).To(BeIdenticalTo(first), name)
+}
 
-	Context("faker with ja_JP locale", func() {
-		j := ja_JP.New()
-		f := faker.CreateWithLocale(j)
-		It("just tinkering; not testing, just experimenting with outputs", func() {
-			f.Rand.Bool.Evenly()
-			f.Rand.Bool.WeightedToTrue(0.8)
+func expectStableGenerators(f *faker.Faker) {
+	GinkgoHelper()
+	expectSameGenerator[core.RandBool]("Bool", f.Bool)
+	expectSameGenerator[core.RandNum]("Num", f.Num)
+	expectSameGenerator[core.RandStr]("Str", f.Str)
+	expectSameGenerator[core.RandTime]("Time", f.Time)
+	expectSameGenerator[core.RandSlice]("Slice", f.Slice)
+	expectSameGenerator[core.RandMap]("Map", f.Map)
+	expectSameGenerator[person.Person]("Person", f.Person)
+	expectSameGenerator[color.Color]("Color", f.Color)
+	expectSameGenerator[address.Address]("Address", f.Address)
+	expectSameGenerator[barcode.Barcode]("Barcode", f.Barcode)
+	expectSameGenerator[company.Company]("Company", f.Company)
+	expectSameGenerator[file.File]("File", f.File)
+	expectSameGenerator[image.Image]("Image", f.Image)
+	expectSameGenerator[internet.Internet]("Internet", f.Internet)
+	expectSameGenerator[lorem.Lorem]("Lorem", f.Lorem)
+	expectSameGenerator[medical.Medical]("Medical", f.Medical)
+	expectSameGenerator[payment.Payment]("Payment", f.Payment)
+	expectSameGenerator[phonenumber.PhoneNumber]("PhoneNumber", f.PhoneNumber)
+	expectSameGenerator[useragent.UserAgent]("UserAgent", f.UserAgent)
+}
 
-			f.Rand.Num.IntBt(1, 10)
-			f.Rand.Num.Int32Bt(1, 10)
-			f.Rand.Num.Int64Bt(1, 10)
-			f.Rand.Num.Float32Bt(1.0, 10.0)
-			f.Rand.Num.Float64Bt(1.0, 10.0)
-
-			// rand.Randのメソッドを使いたい場合は、エイリアスが用意されています
-			f.Rand.Num.Int()
-			f.Rand.Num.Intn(10)
-			f.Rand.Str.Char()
-			f.Rand.Time.PastFuture()
-
-			f.Rand.Slice.IntElem([]int{1, 2, 3})
-			f.Barcode.EAN13()
-			f.Color.Hex()
-			f.File.MIMEType()
-			f.Image.Binary(100, 100, "jpg")
-			f.Internet.FirstName()
-			f.Lorem.Word()
-			f.Address.City()
-			f.Company.Name()
-
-			// Just a placeholder expectation to ensure the test runs
-			Expect(true).To(Equal(true))
-		})
-	})
-
-})
+var _ = DescribeTable("Faker constructors expose stable generators",
+	func(create func() *faker.Faker) {
+		expectStableGenerators(create())
+	},
+	Entry("Create", faker.Create),
+	Entry("CreateWithLocale", func() *faker.Faker { return faker.CreateWithLocale(ja_JP.New()) }),
+	Entry("CreateWithSeed", func() *faker.Faker { return faker.CreateWithSeed(testSeed) }),
+	Entry("CreateWithLocaleAndSeed", func() *faker.Faker { return faker.CreateWithLocaleAndSeed(ja_JP.New(), testSeed) }),
+)

@@ -1,22 +1,52 @@
 package faker_test
 
 import (
+	"math/rand"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/ensoria/gofake/pkg/faker"
+	"github.com/ensoria/gofake/pkg/faker/core"
+	"github.com/ensoria/gofake/pkg/faker/generator/person"
+	"github.com/ensoria/gofake/pkg/faker/provider"
+	"github.com/ensoria/gofake/pkg/faker/provider/locale/en_US"
+	"github.com/ensoria/gofake/pkg/faker/provider/locale/ja_JP"
+)
+
+const (
+	testSeed     = 42
+	sampleCount  = 20
+	numberLimit  = 1_000_000
+	stringLength = 12
 )
 
 var _ = Describe("Seeded Faker", func() {
-	// 同一シードなら同一の値列を生成する（決定的）ことを確認する。
-	It("produces the same sequence for the same seed", func() {
-		a := faker.CreateWithSeed(42)
-		b := faker.CreateWithSeed(42)
+	DescribeTable("uses one random stream for core and locale generators",
+		func(create func() *faker.Faker, locale func() *provider.Localized) {
+			f := create()
+			source := core.NewRand(rand.New(rand.NewSource(testSeed)))
+			names := person.New(source, locale())
 
-		for i := 0; i < 20; i++ {
-			Expect(a.Rand.Num.IntBt(0, 1_000_000)).To(Equal(b.Rand.Num.IntBt(0, 1_000_000)))
-			Expect(a.Rand.Str.AlphaFixedLength(12)).To(Equal(b.Rand.Str.AlphaFixedLength(12)))
-			Expect(a.Person.Name()).To(Equal(b.Person.Name()))
+			expectStableGenerators(f)
+			for range sampleCount {
+				Expect(f.Num().IntBt(0, numberLimit)).To(Equal(source.Num.IntBt(0, numberLimit)))
+				Expect(f.Str().AlphaFixedLength(stringLength)).To(Equal(source.Str.AlphaFixedLength(stringLength)))
+				Expect(f.Person().Name()).To(Equal(names.Name()))
+			}
+		},
+		Entry("default en_US", func() *faker.Faker { return faker.CreateWithSeed(testSeed) }, en_US.New),
+		Entry("explicit ja_JP", func() *faker.Faker { return faker.CreateWithLocaleAndSeed(ja_JP.New(), testSeed) }, ja_JP.New),
+	)
+
+	It("produces the same sequence for the same seed", func() {
+		a := faker.CreateWithSeed(testSeed)
+		b := faker.CreateWithSeed(testSeed)
+
+		for range sampleCount {
+			Expect(a.Num().IntBt(0, numberLimit)).To(Equal(b.Num().IntBt(0, numberLimit)))
+			Expect(a.Str().AlphaFixedLength(stringLength)).To(Equal(b.Str().AlphaFixedLength(stringLength)))
+			Expect(a.Person().Name()).To(Equal(b.Person().Name()))
 		}
 	})
 
@@ -24,14 +54,11 @@ var _ = Describe("Seeded Faker", func() {
 		a := faker.CreateWithSeed(1)
 		b := faker.CreateWithSeed(2)
 
-		// 少なくとも1つは異なるはず（同一なら決定性の意味がない）
-		differs := false
-		for i := 0; i < 20; i++ {
-			if a.Rand.Num.IntBt(0, 1_000_000) != b.Rand.Num.IntBt(0, 1_000_000) {
-				differs = true
-				break
-			}
+		var first, second []int
+		for range sampleCount {
+			first = append(first, a.Num().IntBt(0, numberLimit))
+			second = append(second, b.Num().IntBt(0, numberLimit))
 		}
-		Expect(differs).To(BeTrue())
+		Expect(first).NotTo(Equal(second))
 	})
 })
