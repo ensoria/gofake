@@ -222,11 +222,21 @@ func (p *Person) LastKanaName() string {
 	return p.rand.Slice.StrElem(p.data.LastKanaNames)
 }
 
+func (p *Person) supportsMaleKanaName() bool {
+	return p.data != nil && len(p.data.MaleNameFormats) > 0 && p.data.CreateKanaNameMale != nil
+}
+
+func (p *Person) supportsFemaleKanaName() bool {
+	return p.data != nil && len(p.data.FemaleNameFormats) > 0 && p.data.CreateKanaNameFemale != nil
+}
+
 // MaleKanaName returns a randomly formatted male full name in katakana.
+// If the locale lacks a male name format or kana callback, it returns an empty
+// string and logs a warning when a logger is configured.
 //
 // ランダムにフォーマットされた男性のカタカナのフルネームを返す。
 func (p *Person) MaleKanaName() string {
-	if len(p.data.MaleNameFormats) == 0 {
+	if !p.supportsMaleKanaName() {
 		log.UnavailableLocale(1)
 		return ""
 	}
@@ -237,10 +247,12 @@ func (p *Person) MaleKanaName() string {
 }
 
 // FemaleKanaName returns a randomly formatted female full name in katakana.
+// If the locale lacks a female name format or kana callback, it returns an empty
+// string and logs a warning when a logger is configured.
 //
 // ランダムにフォーマットされた女性のカタカナのフルネームを返す。
 func (p *Person) FemaleKanaName() string {
-	if len(p.data.FemaleNameFormats) == 0 {
+	if !p.supportsFemaleKanaName() {
 		log.UnavailableLocale(1)
 		return ""
 	}
@@ -251,10 +263,12 @@ func (p *Person) FemaleKanaName() string {
 }
 
 // KanaName returns a randomly formatted full name in katakana (male or female with equal probability).
+// Both variants must have a name format and kana callback. Otherwise it returns an
+// empty string and logs a warning when a logger is configured.
 //
 // ランダムにフォーマットされたカタカナのフルネームを返す（男女等確率）。
 func (p *Person) KanaName() string {
-	if (len(p.data.MaleNameFormats) == 0) || (len(p.data.FemaleNameFormats) == 0) {
+	if !p.supportsMaleKanaName() || !p.supportsFemaleKanaName() {
 		log.UnavailableLocale(1)
 		return ""
 	}

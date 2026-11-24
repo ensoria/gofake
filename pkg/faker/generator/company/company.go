@@ -112,12 +112,14 @@ func (c *Company) EINPrefix() string {
 	return c.rand.Slice.StrElem(c.data.EINPrefixes)
 }
 
-// EIN returns a random Employer Identification Number.
-// See: https://en.wikipedia.org/wiki/Employer_Identification_Number
-// Example: "12-3456789"
-//
-// ランダムな雇用者識別番号を返す。
+// EIN returns a synthetic U.S. Employer Identification Number in XX-XXXXXXX format.
+// If the locale has no EIN prefixes, it returns an empty string and logs a warning
+// when a logger is configured.
 func (c *Company) EIN() string {
+	if c.data == nil || len(c.data.EINPrefixes) == 0 {
+		log.UnavailableLocale(1)
+		return ""
+	}
 	prefix := c.EINPrefix()
 	suffixNum := c.rand.Num.Int64Bt(0, 9999999)
 	return prefix + "-" + fmt.Sprintf("%07d", suffixNum)
